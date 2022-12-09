@@ -1,0 +1,25 @@
+load("final_data.RData")
+(length(unique(tot$year))*length(unique(tot$Age)))-length(unique(tot$year))
+length(unique(tot$Cohort))
+
+sort(unique(tot$Cohort))
+
+
+library(tidyverse)
+head(tot)
+d <- tot %>% select(gender_gap,Cause_Rev,Cohort) 
+  
+  
+  spread(d,key=Cause_Rev, value=gender_gap)
+
+spread(df, key=stat, value=amount)
+
+rownames(tot)
+
+unlist(tot)
+
+
+
+array(c(unlist(tot)), c(7, 22, 140), 
+      dimnames=list(rownames(df1), colnames(df1)))
+

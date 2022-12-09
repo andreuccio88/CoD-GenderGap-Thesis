@@ -1,0 +1,2 @@
+load("final_data.RData")
+head(tot)
