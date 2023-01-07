@@ -106,9 +106,6 @@ save(usa_M,file="usa_M.RData")  #file finale ordinato
 
 
 
-
-
-
 rm(list=ls())
 ########################
 #                      #
@@ -212,28 +209,31 @@ tot$gender_gap <- tot$mx.tot.by.Caus/tot$mx.tot.by.Caus_F  #costruisco colonna G
 
 tot <- tot[,c(1,2,3,11)]  #causa_morte/age/gg/coorte
 
-tot %>%filter(year==2000) %>% ggplot(aes(Age,(gender_gap)))+geom_line()+facet_wrap(~Cause_Rev,scales = "free")
+# tot %>%filter(year==2000) %>% ggplot(aes(Age,(gender_gap)))+geom_line()+facet_wrap(~Cause_Rev,scales = "free")
+
 tot$Cohort <- tot$year-tot$Age
   
-tot %>%filter(Age==25) %>% ggplot(aes(Cohort,(gender_gap)))+geom_line()+
-  facet_wrap(~Cause_Rev,scales = "free")
+# tot %>%filter(Age==25) %>% ggplot(aes(Cohort,(gender_gap)))+geom_line()+facet_wrap(~Cause_Rev,scales = "free")
 
 
 save(tot,file="final_data.RData")
 
 ###########################################################
+
+tot1 <- tot %>%filter(Cohort>=1919) %>%filter(Cohort<=1928) %>%filter(Age>=60) %>%filter(Age<=90)
+tot1 <- tot1[,2:5]	# non consideriamo gli anni
+
 # decomporre il gender gap utilizzando il metodo Candecomp-Parafac (CP) all’interno del pacchetto R “ThreeWay” 
 # con la funzione “CP”.
 
 # input in forma di array e delle variabili in base alle quali effettuare la decomposizione (cause di morte, età, coorte).
-
 library("ThreeWay")
 
 # etichette 
 
-laba <- unique(tot$Cause_Rev)
-labb <- unique(tot$Age)
-labc <- unique(tot$Cohort)  
+laba <- unique(tot1$Cause_Rev)
+labb <- unique(tot1$Age)
+labc <- unique(tot1$Cohort)  
 
 #view(laba) --> cuase di morte: 7 elementi
 #view(labb) ---> age a gruppi da 5 anni: 22 elementi
@@ -241,18 +241,46 @@ labc <- unique(tot$Cohort)
 
 # creazione array()
 
-dim3 <- nrow(tot)/(length(laba)*length(labb))
-tot2=permnew(tot[,4],7,22,dim3)  #permutazione dell'array 
-tot3=permnew(tot2,22,dim3,7)  #permutazione dell'array 
-tot4=permnew(tot3,dim3,7,22)  #permutazione dell'array 
+tot2=permnew(tot1[,3],length(laba),length(labb),length(labc))  #permutazione dell'array 
+tot3=permnew(tot2,length(labc),length(laba),length(labb))  #permutazione dell'array 
 
-tot_cp <- CP(tot4,laba,labb,labc)
+# call per CP model
+# Specify the number of A-mode entities = 7
+# Specify the number of B-mode entities = 7
+# Specify the number of C-mode entities = 10
+
+tot_cp <- CP(tot3,laba,labb,labc)
 
 tot_cp$fit
 
 save(tot_cp, file="tot_cp.RData")
 
 
+# Ripetere l'analisi per i tassi di mortalità
 
+###########################################################
+#####	Tassi femminili
+###########################################################
+usa_F$Cohort <- usa_F$year-usa_F$Age
+usa_F <- usa_F[,c(2:4,6)]
+usa_F <- usa_F %>%filter(Cohort>=1919) %>%filter(Cohort<=1928) %>%filter(Age>=60) %>%filter(Age<=90)
+
+# etichette 
+laba <- unique(usa_F$Cause_Rev)
+labb <- unique(usa_F$Age)
+labc <- unique(usa_F$Cohort)  
+
+###########################################################
+#####	Tassi maschili
+###########################################################
+usa_M$Cohort <- usa_M$year-usa_M$Age
+usa_M <- usa_M[,c(2:4,6)]
+
+usa_M <- usa_M %>%filter(Cohort>=1919) %>%filter(Cohort<=1928) %>%filter(Age>=60) %>%filter(Age<=90)
+
+# etichette 
+laba <- unique(usa_M$Cause_Rev)
+labb <- unique(usa_M$Age)
+labc <- unique(usa_M$Cohort)  
 
 
