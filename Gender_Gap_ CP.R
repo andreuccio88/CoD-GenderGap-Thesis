@@ -215,7 +215,6 @@ tot$Cohort <- tot$year-tot$Age
   
 # tot %>%filter(Age==25) %>% ggplot(aes(Cohort,(gender_gap)))+geom_line()+facet_wrap(~Cause_Rev,scales = "free")
 
-
 save(tot,file="final_data.RData")
 
 ###########################################################
@@ -235,10 +234,6 @@ laba <- unique(tot1$Cause_Rev)
 labb <- unique(tot1$Age)
 labc <- unique(tot1$Cohort)  
 
-#view(laba) --> cuase di morte: 7 elementi
-#view(labb) ---> age a gruppi da 5 anni: 22 elementi
-#view(labc) --> coorte dal 1879 al 2018: 140 elementi
-
 # creazione array()
 
 tot2=permnew(tot1[,3],length(laba),length(labb),length(labc))  #permutazione dell'array 
@@ -256,7 +251,7 @@ tot_cp$fit
 save(tot_cp, file="tot_cp.RData")
 
 
-# Ripetere l'analisi per i tassi di mortalità
+# NB: Ripetere l'analisi per i tassi di mortalità
 
 ###########################################################
 #####	Tassi femminili
