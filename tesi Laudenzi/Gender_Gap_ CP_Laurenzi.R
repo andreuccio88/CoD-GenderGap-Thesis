@@ -20,8 +20,8 @@ library(tidyverse)
 library(reshape)
 library(data.table)
 
-# usa <- read.csv("/Users/flaviolaudenzi/Desktop/USA_m_short_idr.csv",header = T)
 usa <- read.csv("USA_m_short_idr.csv",header = T)
+#usa <- read.csv("USA_m_short_idr.csv",header = T)
 head(usa)  #descrizione delle variabili
 
 #costruisco il vettore usa_M il quale filtra il sesso maschile e causa
@@ -118,8 +118,8 @@ library(tidyverse)
 library(reshape)
 library(data.table)
 
-# usa <- read.csv("/Users/flaviolaudenzi/Desktop/USA_m_short_idr.csv",header = T)
 usa <- read.csv("USA_m_short_idr.csv",header = T)
+#usa <- read.csv("USA_m_short_idr.csv",header = T)
 usa_F <- usa %>% filter(sex==2,cause!=0) #select 2-female
 usa_F <- usa_F[,-c(1,3,4,5,25,27,29)]
 
@@ -211,19 +211,20 @@ tot <- tot[,c(1,2,3,11)]  #causa_morte/age/gg/coorte
 
 # tot %>%filter(year==2000) %>% ggplot(aes(Age,(gender_gap)))+geom_line()+facet_wrap(~Cause_Rev,scales = "free")
 
-tot$Cohort <- tot$year-tot$Age
+tot$Cohort <- tot$year-tot$Age   #nuova colonna coorte
   
 # tot %>%filter(Age==25) %>% ggplot(aes(Cohort,(gender_gap)))+geom_line()+facet_wrap(~Cause_Rev,scales = "free")
 
 save(tot,file="final_data.RData")
 
-###########################################################
+######################################################################################################################
+#####################################     Applicazione metodo CP 	 #################################################
+######################################################################################################################
 
 tot1 <- tot %>%filter(Cohort>=1919) %>%filter(Cohort<=1928) %>%filter(Age>=60) %>%filter(Age<=90)
 tot1 <- tot1[,2:5]	# non consideriamo gli anni
 
-# decomporre il gender gap utilizzando il metodo Candecomp-Parafac (CP) all’interno del pacchetto R “ThreeWay” 
-# con la funzione “CP”.
+#in tot1 sto considerando una coorte che va da 1919 a 1928 e una età che parte da 60
 
 # input in forma di array e delle variabili in base alle quali effettuare la decomposizione (cause di morte, età, coorte).
 library("ThreeWay")
@@ -256,6 +257,7 @@ save(tot_cp, file="tot_cp.RData")
 ###########################################################
 #####	Tassi femminili
 ###########################################################
+
 usa_F$Cohort <- usa_F$year-usa_F$Age
 usa_F <- usa_F[,c(2:4,6)]
 usa_F <- usa_F %>%filter(Cohort>=1919) %>%filter(Cohort<=1928) %>%filter(Age>=60) %>%filter(Age<=90)
@@ -265,17 +267,32 @@ laba <- unique(usa_F$Cause_Rev)
 labb <- unique(usa_F$Age)
 labc <- unique(usa_F$Cohort)  
 
+usa_F2=permnew(usa_F[,3],length(laba),length(labb),length(labc))  #permutazione dell'array 
+usa_F3=permnew(usa_F2,length(labc),length(laba),length(labb))  #permutazione dell'array 
+
+tot_cp_usa_F <- CP(usa_F3,laba,labb,labc)
+
+save(tot_cp, file="tot_cp_usa_F.RData")
+
 ###########################################################
 #####	Tassi maschili
 ###########################################################
 usa_M$Cohort <- usa_M$year-usa_M$Age
 usa_M <- usa_M[,c(2:4,6)]
-
 usa_M <- usa_M %>%filter(Cohort>=1919) %>%filter(Cohort<=1928) %>%filter(Age>=60) %>%filter(Age<=90)
+
+usa_M2=permnew(usa_M[,3],length(laba),length(labb),length(labc))  #permutazione dell'array 
+usa_M3=permnew(usa_M2,length(labc),length(laba),length(labb))  #permutazione dell'array 
 
 # etichette 
 laba <- unique(usa_M$Cause_Rev)
 labb <- unique(usa_M$Age)
-labc <- unique(usa_M$Cohort)  
+labc <- unique(usa_M$Cohort) 
+
+tot_cp_usa_M <- CP(usa_M3,laba,labb,labc)
+
+save(tot_cp, file="tot_cp_usa_M.RData")
+ 
+###############################################
 
 
