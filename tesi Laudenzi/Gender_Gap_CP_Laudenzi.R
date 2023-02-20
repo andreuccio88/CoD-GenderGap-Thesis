@@ -224,32 +224,38 @@ save(tot,file="final_data.RData")
 tot1 <- tot %>%filter(Cohort>=1919) %>%filter(Cohort<=1928) %>%filter(Age>=60) %>%filter(Age<=90)
 tot1 <- tot1[,2:5]	# non consideriamo gli anni
 
-#in tot1 sto considerando una coorte che va da 1919 a 1928 e una età che parte da 60
-
+# creazione array()
 # input in forma di array e delle variabili in base alle quali effettuare la decomposizione (cause di morte, età, coorte).
+
+prova <- tot1[order(tot1$Cohort,tot1$Age,tot1$Cause_Rev),]
+tot3 <- matrix(prova$gender_gap, nrow=7, ncol=70)
+
 library("ThreeWay")
 
 # etichette 
-
 laba <- unique(tot1$Cause_Rev)
 labb <- unique(tot1$Age)
 labc <- unique(tot1$Cohort)  
 
-# creazione array()
-
-tot2=permnew(tot1[,3],length(laba),length(labb),length(labc))  #permutazione dell'array 
-tot3=permnew(tot2,length(labc),length(laba),length(labb))  #permutazione dell'array 
-
-# call per CP model
+# call per CP o T3 model
 # Specify the number of A-mode entities = 7
 # Specify the number of B-mode entities = 7
 # Specify the number of C-mode entities = 10
+# center across A-mode
+# normalize within A-mode (provare anche B-mode e C-mode)
+# You have to specify the dimensionality to use. --> 1
+# Up to how many components do you want to use? --> 7
+# Do you want to use constraints? --> NO
 
-tot_cp <- CP(tot3,laba,labb,labc)
+totCP <- CP(tot3,laba,labb,labc)	 # esce la degeneracy quindi si suggerisce il T3
 
-tot_cp$fit
+totT3 <- T3(tot3,laba,labb,labc)
 
-save(tot_cp, file="tot_cp.RData")
+totCP$fit
+totT3$fit
+
+save(totCP, file="tot_cp.RData")
+save(totT3, file="tot_t3.RData")
 
 
 # NB: Ripetere l'analisi per i tassi di mortalità
@@ -260,19 +266,24 @@ save(tot_cp, file="tot_cp.RData")
 
 usa_F$Cohort <- usa_F$year-usa_F$Age
 usa_F <- usa_F[,c(2:4,6)]
-usa_F <- usa_F %>%filter(Cohort>=1919) %>%filter(Cohort<=1928) %>%filter(Age>=60) %>%filter(Age<=90)
+usa_F <- usa_F%>%filter(Cohort>=1919) %>%filter(Cohort<=1928) %>%filter(Age>=60) %>%filter(Age<=90)
+
+# creazione array()
+# input in forma di array e delle variabili in base alle quali effettuare la decomposizione (cause di morte, età, coorte).
+
+provaF <- usa_F[order(usa_F$Cohort, usa_F$Age, usa_F$Cause_Rev),]
+tot3F <- matrix(provaF$mx.tot.by.Caus_F, nrow=7, ncol=70)
 
 # etichette 
 laba <- unique(usa_F$Cause_Rev)
 labb <- unique(usa_F$Age)
 labc <- unique(usa_F$Cohort)  
 
-usa_F2=permnew(usa_F[,3],length(laba),length(labb),length(labc))  #permutazione dell'array 
-usa_F3=permnew(usa_F2,length(labc),length(laba),length(labb))  #permutazione dell'array 
+totCP_F <- CP(tot3F,laba,labb,labc)
+totT3_F <- T3(tot3F,laba,labb,labc)
 
-tot_cp_usa_F <- CP(usa_F3,laba,labb,labc)
-
-save(tot_cp, file="tot_cp_usa_F.RData")
+save(totCP_F, file="tot_cp_F.RData")
+save(totT3_F, file="tot_t3_F.RData")
 
 ###########################################################
 #####	Tassi maschili
@@ -281,18 +292,23 @@ usa_M$Cohort <- usa_M$year-usa_M$Age
 usa_M <- usa_M[,c(2:4,6)]
 usa_M <- usa_M %>%filter(Cohort>=1919) %>%filter(Cohort<=1928) %>%filter(Age>=60) %>%filter(Age<=90)
 
-usa_M2=permnew(usa_M[,3],length(laba),length(labb),length(labc))  #permutazione dell'array 
-usa_M3=permnew(usa_M2,length(labc),length(laba),length(labb))  #permutazione dell'array 
+# creazione array()
+# input in forma di array e delle variabili in base alle quali effettuare la decomposizione (cause di morte, età, coorte).
+
+provaM <- usa_M[order(usa_M$Cohort, usa_M$Age, usa_M$Cause_Rev),]
+tot3M <- matrix(provaM$mx.tot.by.Caus, nrow=7, ncol=70)
 
 # etichette 
 laba <- unique(usa_M$Cause_Rev)
 labb <- unique(usa_M$Age)
 labc <- unique(usa_M$Cohort) 
 
-tot_cp_usa_M <- CP(usa_M3,laba,labb,labc)
+totCP_M <- CP(tot3M,laba,labb,labc)
+totT3_M <- T3(tot3M,laba,labb,labc)
 
-save(tot_cp, file="tot_cp_usa_M.RData")
- 
+save(totCP_M, file="tot_cp_M.RData")
+save(totT3_M, file="tot_t3_M.RData")
+
 ###############################################
 
 
